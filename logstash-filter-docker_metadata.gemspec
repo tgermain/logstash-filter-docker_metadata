@@ -1,5 +1,5 @@
 Gem::Specification.new do |s|
-  s.name = 'logstash-filter-docker-metadata'
+  s.name = 'logstash-filter-docker_metadata'
   s.version         = '0.1.4'
   s.licenses = ['Apache License (2.0)']
   s.summary = "This example filter replaces the contents of the message field with the specified value."
