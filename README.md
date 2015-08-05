@@ -1,3 +1,5 @@
+[![Gem Version](https://badge.fury.io/rb/logstash-filter-docker_metadata.svg)](http://badge.fury.io/rb/logstash-filter-docker_metadata)
+
 # Logstash Plugin
 
 This is a plugin for [Logstash](https://github.com/elasticsearch/logstash).
