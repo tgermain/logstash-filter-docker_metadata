@@ -20,6 +20,12 @@ class LogStash::Filters::DockerMetadata < LogStash::Filters::Base
     :required => false,
     :deprecated => false
 
+  config :field_docker_id,
+    :validate => :string,
+    :default => 'path',
+    :required => false,
+    :deprecated => false
+
   config :cache_size,
     :validate => :number,
     :default => 100,
@@ -63,17 +69,11 @@ class LogStash::Filters::DockerMetadata < LogStash::Filters::Base
   public
   def filter(event)
 
-    # get container id from path field
-    if event["path"]
-      container_id = event["path"].match(@container_id_regexp_compiled)
+    # get container id from @field_docker_id field
+    if event[@field_docker_id]
+      container_id = event[@field_docker_id].match(@container_id_regexp_compiled)
     end
 
-    # if it failed fall back to message field
-    if !container_id || !container_id[0]
-      if event["message"]
-        container_id = event["message"].match(@container_id_regexp_compiled)
-      end
-    end
 
     if container_id && container_id[0]
       container_id = container_id[0]
