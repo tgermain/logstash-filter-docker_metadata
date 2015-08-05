@@ -58,7 +58,8 @@ Logstash output :
 
 | name                  | default value                 | comment |
 | :-------------         | :-------------                 | :------------- |
-| `docker_url`          | `unix:///var/run/docker.sock` | make sure it match where you mount the docker socket |
+| `docker_url`          | `'unix:///var/run/docker.sock'` | make sure it match where you mount the docker socket |
+| `field_docker_id` | `'path'`                    | The field from which you read the docker ID |
 | `container_id_regexp` | `(\w{64})`                    | match the complete Id of a docker container |
 | `cache_size`          | 100                           |  |
 
