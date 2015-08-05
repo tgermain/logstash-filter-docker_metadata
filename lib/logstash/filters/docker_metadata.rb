@@ -63,13 +63,15 @@ class LogStash::Filters::DockerMetadata < LogStash::Filters::Base
   public
   def filter(event)
 
-    # get container id from message field
-    container_id = event["message"].match(@container_id_regexp_compiled)
+    # get container id from path field
+    if event["path"]
+      container_id = event["path"].match(@container_id_regexp_compiled)
+    end
 
-    # if it failed fall back to source field
+    # if it failed fall back to message field
     if !container_id || !container_id[0]
-      if event["source"]
-        container_id = event["source"].match(@container_id_regexp_compiled)
+      if event["message"]
+        container_id = event["message"].match(@container_id_regexp_compiled)
       end
     end
 
