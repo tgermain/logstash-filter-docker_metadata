@@ -4,7 +4,9 @@ require "logstash/namespace"
 require 'docker'
 require 'json'
 require 'lru_redux'
-# This example filter will replace the contents of the default 
+
+require_relative 'docker_hash'
+# This example filter will replace the contents of the default
 # message field with whatever you specify in the configuration.
 #
 # It is only intended to be used as an example.
@@ -12,7 +14,7 @@ class LogStash::Filters::DockerMetadata < LogStash::Filters::Base
 
   # Setting the config_name here is required.
   config_name "docker_metadata"
-  
+
 
   config :docker_url,
     :validate => :string,
@@ -37,7 +39,7 @@ class LogStash::Filters::DockerMetadata < LogStash::Filters::Base
     :default => '(\w{64})',
     :required => false,
     :deprecated => false
-  
+
   def get_metadata(container_id)
     begin
       Docker::Container.get(container_id).info
@@ -59,7 +61,7 @@ class LogStash::Filters::DockerMetadata < LogStash::Filters::Base
 
   public
   def register
-    # Add instance variables 
+    # Add instance variables
     Docker.url = @docker_url
 
     @cache = LruRedux::ThreadSafeCache.new(@cache_size)
@@ -68,12 +70,10 @@ class LogStash::Filters::DockerMetadata < LogStash::Filters::Base
 
   public
   def filter(event)
-
     # get container id from @field_docker_id field
     if event[@field_docker_id]
       container_id = event[@field_docker_id].match(@container_id_regexp_compiled)
     end
-
 
     if container_id && container_id[0]
       container_id = container_id[0]
@@ -83,16 +83,17 @@ class LogStash::Filters::DockerMetadata < LogStash::Filters::Base
 
     if metadata
       # add a docker field with all informations
-      event["docker"] = {
+      # Added as custom hash so we get easy IndifferentAccess as symbol keys
+      # proved pretty hard to work with in logstash config
+      event["docker"] = DockerHash.new
+      event["docker"][:id]                  = metadata['id']
+      event["docker"][:name]                = metadata['Name']
+      event["docker"][:container_hostname]  = metadata['Config']['Hostname'],
+      event["docker"][:image]               = metadata['Config']['Image'],
+      event["docker"][:image_id]            = metadata['Image'],
+      event["docker"][:labels]              = metadata['Config']['Labels'],
+      event["docker"][:env]                 = self.format_env(metadata['Config']['Env'])
 
-        :id                 => metadata['id'],
-        :name               => metadata['Name'],
-        :container_hostname => metadata['Config']['Hostname'],
-        :image              => metadata['Config']['Image'],
-        :image_id           => metadata['Image'],
-        :labels             => metadata['Config']['Labels'],
-        :env                => self.format_env(metadata['Config']['Env'])
-      }
     end
 
     # filter_matched should go in the last line of our successful code
